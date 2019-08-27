@@ -1,0 +1,35 @@
+#!/bin/bash
+
+source util.sh
+
+OPTIND=1
+VERBOSE=1
+while getopts q arg; do
+    case $arg in
+        q) VERBOSE=0 ;;
+        ?)
+            echo_red "Bad options"
+            echo "Usage: $0 -q"
+            echo "-q will quiet 'we didn't succeed, trying again' messages."
+            exit -1
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+echo_cyan "Removing derived data"
+
+did_succeed=1
+tries=0
+
+while [ ${did_succeed} -ne 0 ]; do
+    rm -rf ~/Library/Developer/Xcode/DerivedData/* >/dev/null 2>/dev/null
+    did_succeed=$?
+    tries=$((tries + 1))
+    if [[ $VERBOSE == 1 && ${did_succeed} != 0 ]]; then
+        echo_cyan "Didn't successfully nuke derived data, trying again. This is try number ${tries}."
+    fi
+done
+
+echo_green "Nuked! 💥" 

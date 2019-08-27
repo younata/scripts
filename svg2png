@@ -1,0 +1,35 @@
+#!/bin/bash
+
+source util.sh
+
+if [ $# != 2 ]; then
+    echo_red "Usage: $0 [svg_file] [size]"
+    exit -1
+fi
+
+svg_file=$1
+horizontal_size=$2
+
+if [ ! -f "${svg_file}" ]; then
+    echo_red "Error: ${svg_file} is not a file."
+    exit -2
+fi
+
+if ! [ "${horizontal_size}" -ge 0 ] 2>/dev/null;  then
+    echo_red "Error: ${horizontal_size} is not a positive integer."
+    exit -3
+fi
+
+directory=$(dirname "${svg_file}")
+filename=$(basename "${svg_file}")
+image_name="${filename%.*}"
+
+horizontal_size_2x=$((${horizontal_size} * 2))
+horizontal_size_3x=$((${horizontal_size} * 3))
+
+parallel --progress -j 0 << EOF
+svgexport ${filename} ${image_name}.png ${horizontal_size}:
+svgexport ${filename} ${image_name}@2x.png ${horizontal_size_2x}:
+svgexport ${filename} ${image_name}@3x.png ${horizontal_size_3x}:
+EOF
+

@@ -1,0 +1,55 @@
+#!/bin/bash
+
+source util.sh
+
+OPTIND=1
+
+FORCE_ARGS=""
+OPEN_PR=0
+SKIP_TESTS=0
+
+while getopts fps arg; do
+    case $arg in
+        f) FORCE_ARGS="--force-with-lease" ;;
+        p) OPEN_PR=1 ;;
+        s) SKIP_TESTS=1 ;;
+        ?)
+            echo_red "Bad options"
+            echo "Usage: $0 -f -p"
+            echo "-f will append '--force-with-lease' to the push command arguments"
+            echo "-p will attempt to open a pr after pushing"
+            exit -1
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+if git diff-index --quiet HEAD --; then
+    echo_green "Git index is clean, continuing with push"
+else
+    echo_red "🚨 Git index not clean, check yo staging"
+    exit 1
+fi
+
+set -e
+
+if [ $SKIP_TESTS -eq 0 ]; then
+    run_tests
+else
+    echo_yellow "⚠️ Skipping Tests! ⚠️"
+fi
+
+push_result=$(git push origin HEAD ${FORCE_ARGS} 2>&1 | tee /dev/tty)
+
+set +e
+
+if [ ${OPEN_PR} -eq 1 ]; then
+    pr_url=$(echo "${push_result}" | grep -oE '\bhttps?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]')
+    if [ $? == 0 ]; then
+        echo_cyan "Opening pull request"
+        open "${pr_url}"
+    else
+        echo_yellow "Unable to create PR: none found"
+    fi
+fi
