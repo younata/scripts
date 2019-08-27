@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Uses svgexport (npm i -g svgexport) and gnu parallel (brew install parallel) to convert svg images to png images, for use in iOS apps.
+
 source util.sh
 
 if [ $# != 2 ]; then
