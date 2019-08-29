@@ -19,6 +19,14 @@ You can also do a [force with lease](https://blog.developer.atlassian.com/force-
 
 If you pass the `-p` option, `push` will look for a url in the standard output of `git push origin HEAD` and, if one is detected, open it in the default browser (using the `open` command). Future work involves expanding pull request support to auto-fill-in options for github pull requests.
 
+## `run_tests`
+
+Builds and runs tests for the project. Detects fastlane, mdbook, and rspec-based projects. Complains but doesn't return error if it can't detect how to run the tests.
+
+- fastlane-based tests is detected by looking for a fastlane file. It'll attempted to run the `test` lane.
+- mdbook project will check spelling (using [`mdspell`](https://github.com/mtuchowski/mdspell)), generate a SUMMARY.md file for the book (using [`mdbook-generate-summary`](https://github.com/younata/mdbook-generate-summary), and then run `mdbook test`.
+- rspec-based projects looks for a `spec` directory, and, if found, runs `rspec .`.
+
 ## `svg2png`
 
 The `svg2png` script creates 3 png images from a single svg image - meant for use in creating assets for use in iOS apps.
